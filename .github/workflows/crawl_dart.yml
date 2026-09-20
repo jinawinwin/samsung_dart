@@ -1,0 +1,63 @@
+name: Crawl Samsung Electronics DART XBRL
+
+on:
+  workflow_dispatch:
+    inputs:
+      start_year:
+        description: "수집 시작 회계연도. 비워두면 2000"
+        required: false
+        default: ""
+      end_year:
+        description: "수집 종료 회계연도. 비워두면 현재연도"
+        required: false
+        default: ""
+      force_redownload:
+        description: "이미 받은 연도도 다시 받으려면 true"
+        required: false
+        default: "false"
+  schedule:
+    - cron: "0 0 1 * *"
+
+permissions:
+  contents: write
+
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 저장소 체크아웃
+        uses: actions/checkout@v4
+
+      - name: 파이썬 설정
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 의존성 설치
+        run: pip install -r requirements.txt
+
+      - name: XBRL / 원본 공시서류 수집 (2000년 ~ 최신, 증분 업데이트)
+        env:
+          DART_API_KEY: ${{ secrets.DART_API_KEY }}
+          START_YEAR: ${{ github.event.inputs.start_year }}
+          END_YEAR: ${{ github.event.inputs.end_year }}
+          FORCE_REDOWNLOAD: ${{ github.event.inputs.force_redownload == 'true' && '1' || '' }}
+        run: python scripts/crawl_dart_xbrl.py
+
+      - name: XBRL에서 핵심 재무 계정 파싱
+        run: python scripts/parse_xbrl.py
+
+      - name: 재무지표 계산 + 리포트/대시보드 데이터 생성
+        run: python scripts/analyze.py
+
+      - name: 변경사항 커밋 및 푸시
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/ reports/ docs/
+          if git diff --cached --quiet; then
+            echo "변경사항 없음 - 커밋 생략"
+          else
+            git commit -m "chore: DART 데이터 자동 업데이트 ($(date +'%Y-%m-%d'))"
+            git push
+          fi
