@@ -105,7 +105,7 @@
   </footer>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script>
 const fmtTrillion = (won) => won == null ? '—' : (won/1e12).toFixed(2);
 const fmtPct = (v) => v == null ? '—' : v.toFixed(2) + '%';
@@ -186,6 +186,17 @@ function renderDashboard(data) {
     </table>
   `;
 
+  try {
+    renderCharts(years);
+  } catch (e) {
+    console.error('차트 렌더링 실패:', e);
+    document.querySelectorAll('.chart-card').forEach(el => {
+      el.innerHTML = '<div class="empty">차트를 그리지 못했습니다 (라이브러리 로드 실패). 표는 정상입니다.</div>';
+    });
+  }
+}
+
+function renderCharts(years) {
   const labels = years.map(y => y.fiscal_year);
   const cssVar = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
