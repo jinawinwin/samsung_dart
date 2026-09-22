@@ -1,5 +1,6 @@
 # Samsung Electronics DART Analytics (수집 → 분석 → 대시보드, 자동 업데이트)
 
+[![대시보드 바로가기](https://img.shields.io/badge/🔗_대시보드_바로가기-jinawinwin.github.io%2Fsamsung__dart-1B2430?style=for-the-badge)](https://jinawinwin.github.io/samsung_dart/)
 삼성전자(005930)의 사업보고서를 **2000년부터 최신까지** [OpenDART](https://opendart.fss.or.kr) API로 수집하고,
 핵심 재무 계정을 파싱해 지표를 계산한 뒤, **GitHub Pages 대시보드**로 보여주는 완전 자동화 파이프라인입니다.
 매달 자동 실행되어 새 데이터가 나오면 대시보드도 자동으로 갱신됩니다.
